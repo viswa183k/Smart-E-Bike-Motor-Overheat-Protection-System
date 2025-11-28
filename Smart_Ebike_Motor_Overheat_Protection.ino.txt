@@ -1,0 +1,39 @@
+// Smart E-Bike Motor Overheat Protection System
+// Sensors: NTC Thermistor + Voltage Divider
+// Actuator: Motor Driver (PWM Control)
+
+const int tempPin = A0;
+const int motorPWM = 9;
+
+int maxSafeTemp = 75;  // °C threshold
+int pwmValue = 200;    // Normal motor speed
+
+float getTemperature() {
+  int adc = analogRead(tempPin);
+  float voltage = adc * (5.0 / 1023.0);
+
+  // Approximate conversion for NTC (simple model)
+  float tempC = (voltage * 100.0);  
+  return tempC;
+}
+
+void setup() {
+  pinMode(motorPWM, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  float temp = getTemperature();
+
+  if (temp >= maxSafeTemp) {
+    analogWrite(motorPWM, 0);  // Cut off motor
+    Serial.println("⚠ MOTOR OVERHEATED — POWER CUT");
+  } else {
+    analogWrite(motorPWM, pwmValue);
+    Serial.print("Temp: ");
+    Serial.print(temp);
+    Serial.println(" °C");
+  }
+
+  delay(700);
+}
